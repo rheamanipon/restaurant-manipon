@@ -30,7 +30,7 @@ class ProductController extends Controller
     {
         $validated = request()->validate([
             'name' => 'required|string|max:128|unique:products,name',
-            'price' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0|max:999.99',
             'image_path' => 'nullable|string|max:255',
         ]);
 

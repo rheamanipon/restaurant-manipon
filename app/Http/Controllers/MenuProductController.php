@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuProduct;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MenuProductController extends Controller
 {
@@ -27,11 +28,17 @@ class MenuProductController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validated = request()->validate([
-            'menu_id' => 'required|exists:menus,id',
-            'product_id' => 'required|exists:products,id',
-        ]);
+{
+    $validated = $request->validate([
+        'menu_id' => ['required', 'exists:menus,id'],
+        'product_id' => [
+            'required',
+            'exists:products,id',
+            Rule::unique('menu_products')->where(function ($query) use ($request) {
+                return $query->where('menu_id', $request->menu_id);
+            }),
+        ],
+    ]);
 
         $menuProduct = MenuProduct::create($validated);
         return response()->json($menuProduct, 201);
@@ -58,7 +65,19 @@ class MenuProductController extends Controller
      */
     public function update(Request $request, MenuProduct $menuProduct)
     {
-        //
+         $validated = $request->validate([
+        'menu_id' => ['required', 'exists:menus,id'],
+        'product_id' => [
+            'required',
+            'exists:products,id',
+            Rule::unique('menu_products')->where(function ($query) use ($request) {
+                return $query->where('menu_id', $request->menu_id);
+            }),
+        ],
+    ]);
+
+        $menuProduct->update($validated);
+        return response()->json($menuProduct, 200);
     }
 
     /**
@@ -66,6 +85,7 @@ class MenuProductController extends Controller
      */
     public function destroy(MenuProduct $menuProduct)
     {
-        //
+        $menuProduct->delete();
+        return response()->json(['message' => 'Menu-Product deleted successfully'],200);
     }
 }
